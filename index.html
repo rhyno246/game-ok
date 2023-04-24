@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./vendor/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="wheelOfFortune">
+      <div class="wheel--spin">
+        <canvas id="canvas" width="500" height="500"> </canvas>
+        <img src="./images/3.png" alt="" class="img-fluid" />
+      </div>
+    </div>
+  </body>
+  <div
+    class="modal fade"
+    id="wheel--modal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          <img src="" alt="" class="img-fluid wheel--notify--img" />
+          <h2 class="wheel--notify--title">Xin Chúc Mừng</h2>
+          <p class="wheel--notify--content"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="./vendor/bootstrap.min.js"></script>
+  <script src="./vendor/TweenMax.min.js"></script>
+  <script src="./vendor/lucky.min.js"></script>
+  <script src="./vendor/howler.core.js"></script>
+  <script src="./vendor/confetti.browser.min.js"></script>
+  <script>
+
+
+
+
+
+
+
+
+    // var soundStart = new Howl({
+    //   src: ['./vendor/sound/tick.mp3'],
+    //   html5: true
+    // });
+
+    // var soundEnd = new Howl({
+    //   src: ['./vendor/sound/smspin.mp3'],
+    //   html5: true
+    // });
+
+    let theWheel = new Winwheel({
+      numSegments: 8,
+      lineWidth: 3,
+      drawMode: "image",
+      rotationAngle: -22.5, // 360/8/2
+      segments: [
+        { text: "1 chi vang 24k" },
+        { text: "the 20k" },
+        { text: "1 chi vang 24k" },
+        { text: "random qua" },
+        { text: "1 chi vang 24k" },
+        { text: "the 10k" },
+        { text: "1 chi vang 24k" },
+        { text: "random qua" },
+      ],
+      pointerGuide: {
+        display: true,
+        strokeStyle: "red",
+        lineWidth: 3,
+      },
+      animation: {
+        type: "spinToStop",
+        duration: 15,
+        spins: 8,
+        callbackFinished: showNotify,
+        callbackSound: playSound,
+      'callbackAfter' : 'drawColourTriangle()',
+        soundTrigger: "pin",
+      },
+      pins: {
+        number: 8,
+        outerRadius: 0,
+      },
+    });
+    var arr = [1,2,2,2,3,4,4,4,4,5,6,6,6,7,8,8,8];
+
+    $(document).on("click", ".wheel--spin img", function () {
+      startSpinner();
+    });
+
+
+    var onMusic = "True";
+    function playSound() {
+      if(onMusic == "True"){
+        SoundWheelSaba = new Audio('./vendor/sound/O-Standard-1.mp3');
+        SoundWheelSaba.pause();
+        SoundWheelSaba.currentTime = 0;
+        SoundWheelSaba.play();
+        onMusic = "False";
+      }
+    }
+
+    function endSound () {
+      SoundEndSaba = new Audio('./vendor/sound/smspin.mp3');
+      SoundEndSaba.currentTime = 0;
+      SoundWheelSaba.pause();
+      SoundEndSaba.play();
+    }
+
+    let loadedImg = new Image();
+
+    loadedImg.onload = function () {
+      theWheel.wheelImage = loadedImg;
+      theWheel.draw();
+    };
+    loadedImg.src = "./images/vongquay.png";
+
+    function startSpinner() {
+      $(".wheel--spin img").addClass("wheel--spinning");
+      resetWheel();
+      let rand = arr[Math.floor(Math.random() * arr.length)];
+      let stopAt = theWheel.getRandomForSegment(rand);
+      theWheel.animation.stopAngle = stopAt;
+      theWheel.startAnimation();
+    }
+
+    function resetWheel() {
+      theWheel.stopAnimation(false);
+      theWheel.rotationAngle = 0;
+      theWheel.draw();
+    }
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function loadEffect () {
+      var duration = 15 * 1000;
+      var animationEnd = Date.now() + duration;
+      var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+      var canvas = document.createElement('canvas')
+      canvas.setAttribute('id', 'result-effect')
+      document.body.appendChild(canvas);
+      var interval = setInterval(function() {
+        var timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+        var windowHeight = window.innerHeight;
+        var particleCount = 50 * (timeLeft / duration);
+        var myEffect = confetti.create(canvas , {
+          resize: true,
+          useWorker: true
+        })
+        $('#result-effect').css({
+          height : windowHeight,
+        })
+        myEffect(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+        myEffect(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      }, 250);
+    }
+
+    function showNotify(indicatedSegment) {
+      const value = indicatedSegment.text;
+      const linkImg = value.toLowerCase().replace(/ /g, "");
+      let winningSegmentNumber = theWheel.getIndicatedSegmentNumber();
+      for (let x = 1; x < theWheel.segments.length; x ++) {
+        theWheel.segments[x].fillStyle = 'gray';
+      }
+      theWheel.segments[winningSegmentNumber].fillStyle = 'yellow';
+      theWheel.draw();
+      drawColourTriangle();
+      endSound();
+      $(".wheel--spin img").removeClass("wheel--spinning");
+      $(".wheel--notify--img").attr(
+        "src",
+        `./images/${convertVietnamese(linkImg)}.png`
+      );
+      $(".wheel--notify--content").text(
+        `Bạn đã nhận được ${indicatedSegment.text}`
+      );
+      loadEffect();
+      $("#wheel--modal").modal("show");
+    }
+
+    
+    drawColourTriangle();
+    function drawColourTriangle()
+    {
+        let ctx = theWheel.ctx;
+        ctx.strokeStyle = 'navy';  
+        ctx.fillStyle   = 'aqua';  
+        ctx.lineWidth   = 2;
+    }
+
+    function convertVietnamese(str) {
+      str = str.toLowerCase();
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      str = str.replace(/đ/g, "d");
+      str = str.replace(
+        /!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\:|\;|\'| |\"|\&|\#|\[|\]|~|$|_/g,
+        "-"
+      );
+      str = str.replace(/-+-/g, "-");
+      str = str.replace(/^\-+|\-+$/g, "");
+
+      return str;
+    }
+
+  
+
+
+    $(window).on('load resize' , function () {
+      var windowHeight = window.innerHeight;
+      $('#result-effect').css({
+        height : windowHeight,
+      })
+    })
+    $('#wheel--modal').on('hidden.bs.modal', function (e) {
+      $('#result-effect').remove();
+    })
+
+
+
+  </script>
+</html>
